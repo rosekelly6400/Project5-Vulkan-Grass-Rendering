@@ -26,15 +26,25 @@ struct Blade {
 // 2. Write out the culled blades
 // 3. Write the total number of blades remaining
 
+// input blades
+layout(set = 2, binding = 0) buffer InputBlades {
+	Blade blades[];
+};
+
+// culled blades
+layout(set = 2, binding = 1) buffer CulledBlades {
+	Blade blades[];
+} culledBlades;
+
 // The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
 // This is sort of an advanced feature so we've showed you what this buffer should look like
 //
-// layout(set = ???, binding = ???) buffer NumBlades {
-// 	  uint vertexCount;   // Write the number of blades remaining here
-// 	  uint instanceCount; // = 1
-// 	  uint firstVertex;   // = 0
-// 	  uint firstInstance; // = 0
-// } numBlades;
+layout(set = 2, binding = 2) buffer NumBlades {
+ 	uint vertexCount;   // Write the number of blades remaining here
+ 	uint instanceCount; // = 1
+ 	uint firstVertex;   // = 0
+ 	uint firstInstance; // = 0
+} numBlades;
 
 bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
@@ -43,9 +53,26 @@ bool inBounds(float value, float bounds) {
 void main() {
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
-		// numBlades.vertexCount = 0;
+		numBlades.vertexCount = 0;
 	}
+    uint index = gl_GlobalInvocationID.x;
 	barrier(); // Wait till all threads reach this point
+    blades[index].v0 = vec4(index, 0, 1, 1);
+    blades[index].v1 = vec4(index, 1, 1, 1);
+    blades[index].v2 = vec4(index-0.5, 1, 1, 1);
+    blades[index].up = vec4(0, 1, 0, 0);
+
+    if(index % 4 == 0) {
+        culledBlades.blades[index].v0 = vec4(index, 0, 1, 1);
+        culledBlades.blades[index].v1 = vec4(index, 1, 1, 1);
+        culledBlades.blades[index].v2 = vec4(index-1.5, 1, 1, 1);
+        culledBlades.blades[index].up = vec4(0, 1, 0, 0);
+
+        barrier();
+        numBlades.vertexCount = atomicAdd(numBlades.vertexCount, 1);
+        barrier();
+    }
+    
 
     // TODO: Apply forces on every blade and update the vertices in the buffer
 
