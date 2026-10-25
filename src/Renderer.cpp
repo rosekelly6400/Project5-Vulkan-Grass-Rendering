@@ -1125,7 +1125,7 @@ void Renderer::RecordCommandBuffers() {
             culledBladeBarriers[j].size = sizeof(Blade)*NUM_BLADES;
         }
 
-        vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, bladeBarriers.size(), bladeBarriers.data(), 0, nullptr);
+        vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, culledBladeBarriers.size(), culledBladeBarriers.data(), 0, nullptr);
 
         std::vector<VkBufferMemoryBarrier> barriers(scene->GetBlades().size());
         for (uint32_t j = 0; j < barriers.size(); ++j) {

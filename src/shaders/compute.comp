@@ -53,31 +53,75 @@ bool inBounds(float value, float bounds) {
 void main() {
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
-		numBlades.vertexCount = 0;
+		//numBlades.vertexCount = 0;
 	}
     uint index = gl_GlobalInvocationID.x;
 	barrier(); // Wait till all threads reach this point
-    blades[index].v0 = vec4(index, 0, 1, 1);
-    blades[index].v1 = vec4(index, 1, 1, 1);
-    blades[index].v2 = vec4(index-0.5, 1, 1, 1);
-    blades[index].up = vec4(0, 1, 0, 0);
 
-    if(index % 4 == 0) {
-        culledBlades.blades[index].v0 = vec4(index, 0, 1, 1);
-        culledBlades.blades[index].v1 = vec4(index, 1, 1, 1);
-        culledBlades.blades[index].v2 = vec4(index-1.5, 1, 1, 1);
-        culledBlades.blades[index].up = vec4(0, 1, 0, 0);
+    bool culled = false;
+    vec3 input_v0 = blades[index].v0.xyz;
+    vec3 input_v1 = blades[index].v1.xyz;
+    vec3 input_v2 = blades[index].v2.xyz;
+    vec3 input_up = blades[index].up.xyz;
+    float input_orientation = blades[index].v0.w;
+    float input_height = blades[index].v1.w;
+    float input_width = blades[index].v2.w;
+    float input_stiffness = blades[index].up.w;
+    vec3 initialV2 = input_v0 + input_up * input_height;
 
-        barrier();
-        numBlades.vertexCount = atomicAdd(numBlades.vertexCount, 1);
-        barrier();
-    }
-    
+    mat3 orientationMatrix = mat3(
+        cos(input_orientation), 0.0,    -1.0 * sin(input_orientation),  // col 1 
+        0.0,        1.0,    0.0,                //col 2
+        sin(input_orientation), 0.0,    cos(input_orientation)          // col3
+    );
+    vec3 front = orientationMatrix * vec3(1.0, 0.0, 0.0);
 
     // TODO: Apply forces on every blade and update the vertices in the buffer
+    //GRAVITY
+    vec3 down = -1.0 * input_up;
+    vec3 gravity_e = normalize(down) * 5.0; // environmental gravity
+    vec3 gravity_f = 0.25 * length(gravity_e) * front;
+    vec3 total_gravity = gravity_e + gravity_f;
+    // RECOVERY
+    vec3 recovery = (initialV2 - input_v2) * input_stiffness;
+    // WIND
+    vec3 wind = vec3(4.0, 0, 4.0) * sin(totalTime);
+    float directionAlignment = 1.0 - abs(dot(normalize(wind), normalize(input_v2 - input_v0)));
+    float heightRatio = dot((input_v2 - input_v0), input_up) / input_height;
+    vec3 total_wind = wind * directionAlignment * heightRatio;
+    // CALCULATE V2 FROM FORCES
+    vec3 output_v2 = input_v2 + (total_gravity + recovery + total_wind) * deltaTime;
+    output_v2 = output_v2 - input_up * min(dot(input_up, (output_v2 - input_v0)), 0.0); // account for v2 being underground
+    // CALCULATE V1 FROM NEW V2
+    float l_proj = length(output_v2 - input_v0 - input_up * dot((output_v2 - input_v0), input_up));
+    vec3 output_v1 = input_v0 + input_height * input_up * max(1.0 - l_proj/input_height, 0.5*max(l_proj/input_height, 1.0));
+    // CORRECT NEW V1 AND V2 FOR GRASS LENGTH
+    float L0 = length(output_v2 - input_v0);
+    float L1 = length(output_v1 - input_v0) + length(output_v2 - output_v1);
+    float L = (2.0*L0 + L1) / 3.0;
+    float r = input_height / L;
+    vec3 v1_corr = input_v0 + r * (output_v1 - input_v0);
+    vec3 v2_corr = v1_corr + r * (output_v2 - output_v1);
 
+    blades[index].v0 = vec4(input_v0, input_orientation);
+    blades[index].v1 = vec4(v1_corr, input_height);
+    blades[index].v2 = vec4(v2_corr, input_width);
+    blades[index].up = vec4(input_up, input_stiffness);
+    
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
+
+    // write if not culled
+    if(culled == false) {
+        culledBlades.blades[index].v0 = vec4(input_v0, input_orientation);
+        culledBlades.blades[index].v1 = vec4(v1_corr, input_height);
+        culledBlades.blades[index].v2 = vec4(v2_corr, input_width);
+        culledBlades.blades[index].up = vec4(input_up, input_stiffness);
+
+        barrier();
+        //numBlades.vertexCount = atomicAdd(numBlades.vertexCount, 1);
+        barrier();
+    }
 }

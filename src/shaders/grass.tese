@@ -22,7 +22,7 @@ void main() {
 
 	// TODO: Use u and v to parameterize along the grass blade and output positions for each vertex of the grass blade
     float width = in_v2[0].w;
-    float theta = in_v0[0].w; // orientation of grass blade
+    float theta = in_v0[0].w - 1.5708; // orientation of grass blade - 90 degrees to get t1 vector
     vec3 v0 = in_v0[0].xyz;
     vec3 v1 = in_v1[0].xyz;
     vec3 v2 = in_v2[0].xyz;
