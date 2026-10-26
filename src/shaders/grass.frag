@@ -18,7 +18,7 @@ void main() {
     float camToCenterDist = length(camera.camPos.xyz)/ 20.0;
 
     // go back and fix this
-    float lambertian = dot(normal.xyz, vec3(0.5, 0.5, 0.0));
+    float lambertian = dot(normal.xyz, vec3(0.0, -1.0, 0.0));
     vec3 grassColor = vec3(0.1, 0.5, 0.1) + clamp(lambertian, 0.0, 1.0)*vec3(0.0, 0.4, 0.0);
     vec3 lambertianGrassColor = clamp(lambertian, 0.0, 1.0)*vec3(0.4, 0.8, 0.4);
     outColor = vec4(grassColor, 1);

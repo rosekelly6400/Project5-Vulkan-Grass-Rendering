@@ -93,7 +93,7 @@ void main() {
     // RECOVERY
     vec3 recovery = (initialV2 - input_v2) * input_stiffness;
     // WIND
-    vec3 wind = vec3(4.0, 0, 4.0) * sin(totalTime);
+    vec3 wind = vec3(1.0, 0, 0.0)  * (cos(input_v0.x-4.0*totalTime) + 1 ) * (cos(input_v0.z*0.25-totalTime) + 1 ) * 10.0;
     float directionAlignment = 1.0 - abs(dot(normalize(wind), normalize(input_v2 - input_v0)));
     float heightRatio = dot((input_v2 - input_v0), input_up) / input_height;
     vec3 total_wind = wind * directionAlignment * heightRatio;
