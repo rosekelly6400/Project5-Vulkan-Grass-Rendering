@@ -7,6 +7,7 @@ layout(local_size_x = WORKGROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
 layout(set = 0, binding = 0) uniform CameraBufferObject {
     mat4 view;
     mat4 proj;
+    vec4 camPos;
 } camera;
 
 layout(set = 1, binding = 0) uniform Time {
@@ -75,6 +76,13 @@ void main() {
         sin(input_orientation), 0.0,    cos(input_orientation)          // col3
     );
     vec3 front = orientationMatrix * vec3(1.0, 0.0, 0.0);
+    float bitang_theta = input_orientation - 1.5708;
+    mat3 bitangMatrix = mat3(
+        cos(bitang_theta), 0.0,    -1.0 * sin(bitang_theta),  // col 1 
+        0.0,        1.0,    0.0,                //col 2
+        sin(bitang_theta), 0.0,    cos(bitang_theta)          // col3
+    );
+    vec3 bitangent = bitangMatrix * vec3(1.0, 0.0, 0.0);
 
     // TODO: Apply forces on every blade and update the vertices in the buffer
     //GRAVITY
@@ -113,6 +121,40 @@ void main() {
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
 
+    // ORIENTATION CULLING
+    if (abs(dot(normalize(camera.camPos.xyz), normalize(bitangent))) > 0.9 ) {
+        culled = true;
+    }
+    // DISTANCE CULLING
+    float grassId = input_v0.x*100.0 + input_v0.z*10.0; // create id based on location to enable below distance bucketing method
+    int n = 4; // number of buckets
+    float max_distance = 50.0;
+    float d_proj = length(input_v0 - camera.camPos.xyz - input_up * dot(input_v0 - camera.camPos.xyz, input_up));
+    float distanceTestVal = float(n) * (1.0 - (d_proj/max_distance));
+    if (int(grassId) % n > distanceTestVal) {
+        culled = true;
+    }
+    // simplified version of distance culling
+    //if(length(input_v0 - camera.camPos.xyz) > 10.0) {
+        //culled = true;
+    //}
+    // FRUSTUM CULLING 
+    vec4 screenV0 = camera.proj * camera.view * vec4(input_v0, 1);
+    screenV0 = screenV0 / screenV0.w;
+    vec4 screenV2 = camera.proj * camera.view * vec4(v2_corr, 1);
+    screenV2 = screenV2 / screenV2.w;
+    // GO BACK AND FIX THIS
+    vec3 m = 0.25 * input_v0 + 0.5 * v1_corr + 0.25 * v2_corr;
+    vec4 screenM = camera.proj * camera.view * vec4(m, 1);
+    float boundVal = 1.4;
+    if (!inBounds(screenV0.y, boundVal) || !inBounds(screenV2.y, boundVal) 
+        || !inBounds(screenV0.x, boundVal) || !inBounds(screenV2.x, boundVal) ) {
+        culled = true;
+    }
+    if (screenV0.y > 0.9 || screenV0.y < -0.9 ) {
+        //culled = true;
+    }
+
     // write if not culled
     if(culled == false) {
         culledBlades.blades[index].v0 = vec4(input_v0, input_orientation);
@@ -123,5 +165,12 @@ void main() {
         barrier();
         //numBlades.vertexCount = atomicAdd(numBlades.vertexCount, 1);
         barrier();
+    }
+    else {
+        vec4 zeroOut = vec4(0.0, 0.0, 0.0, 0.0);
+        culledBlades.blades[index].v0 = zeroOut;
+        culledBlades.blades[index].v1 = zeroOut;
+        culledBlades.blades[index].v2 = zeroOut;
+        culledBlades.blades[index].up = zeroOut;
     }
 }
