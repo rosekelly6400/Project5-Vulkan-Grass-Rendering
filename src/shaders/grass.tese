@@ -61,11 +61,13 @@ void main() {
 
     vec3 p = (1.0 - t) * c0 + t *c1;
 
+    vec4 worldpos = (gl_in[0].gl_Position + vec4(p, 1));
     gl_Position = camera.proj * camera.view * (gl_in[0].gl_Position + vec4(p, 1));
 
     //SKYBOX 
     if (in_up[0].w < 0) {
-        bladeColor = vec3(0.4, .82, .95);
+        //bladeColor = vec3(0.4, .79, .79) * (1.5 - clamp(worldpos.y/50.0, 0, 0.7));
+        bladeColor = vec3(0.4, .79, .82);
     }
     else {
         bladeColor = vec3(-1, 1, 0);

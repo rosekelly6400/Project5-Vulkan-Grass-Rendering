@@ -20,13 +20,8 @@ void main() {
 
     // go back and fix this
     float lambertian = dot(normal.xyz, vec3(0.0, -1.0, 0.0));
-    vec3 grassColor = vec3(0.1, 0.5, 0.1) + clamp(lambertian, 0.0, 1.0)*vec3(0.0, 0.4, 0.0);
-    vec3 lambertianGrassColor = clamp(lambertian, 0.0, 1.0)*vec3(0.4, 0.8, 0.4);
+    vec3 grassColor = vec3(0.2, 0.55, 0.28) + clamp(lambertian, 0.0, 1.0)*vec3(0.1, 0.3, 0.2);
     outColor = vec4(grassColor, 1);
-    //outColor = vec4(normal.xyz, 0);
-    //outColor = vec4(0.3, 0.8, 0.3, 1.0);
-
-    //outColor = vec4(camToCenterDist, camToCenterDist, camToCenterDist, 1);
 
     // Camera position debugging view
     //outColor = vec4(normalize(camera.camPos.xyz), 1);
