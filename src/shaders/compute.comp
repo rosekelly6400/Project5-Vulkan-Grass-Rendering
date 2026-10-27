@@ -130,9 +130,6 @@ void main() {
         culled = true;
     }
     // simplified version of distance culling
-    //if(length(input_v0 - camera.camPos.xyz) > 10.0) {
-        //culled = true;
-    //}
     // FRUSTUM CULLING 
     vec4 screenV0 = camera.proj * camera.view * vec4(input_v0, 1);
     screenV0 = screenV0 / screenV0.w;
@@ -145,9 +142,6 @@ void main() {
     if (!inBounds(screenV0.y, boundVal) || !inBounds(screenV2.y, boundVal) 
         || !inBounds(screenV0.x, boundVal) || !inBounds(screenV2.x, boundVal) ) {
         culled = true;
-    }
-    if (screenV0.y > 0.9 || screenV0.y < -0.9 ) {
-        //culled = true;
     }
 
     // SKYBOX
