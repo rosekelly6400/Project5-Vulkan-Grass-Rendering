@@ -15,6 +15,7 @@ layout (location = 2) in vec4 in_v2[];
 layout (location = 3) in vec4 in_up[];
 
 layout(location = 0) out vec3 normal;
+layout(location = 1) out vec3 bladeColor;
 
 void main() {
     float u = gl_TessCoord.x;
@@ -36,6 +37,12 @@ void main() {
 
     vec3 t1 = orientationMatrix * vec3(1.0, 0.0, 0.0);
 
+    //SKYBOX 
+    if (in_up[0].w < 0) {
+        v2 = in_v1[0].xyz;
+        t1 = normalize(in_v2[0].xyz);
+    }
+
     vec3 a = v0 + v * (v1 - v0);
     vec3 b = v1 + v * (v2 - v1);
     vec3 c = a + v * (b - a);
@@ -47,8 +54,20 @@ void main() {
     normal = n;
     float t = u + 0.5 * v - u*v;
 
+    //SKYBOX 
+    if (in_up[0].w < 0) {
+        t = u;
+    }
+
     vec3 p = (1.0 - t) * c0 + t *c1;
 
-    //gl_Position = camera.proj * camera.view * (gl_in[0].gl_Position + vec4(0.2*(1.0 - u) *(1.0 - v*v) - 0.1*(1.0 - v*v), 2.0*v, 0.0, 0.0));
     gl_Position = camera.proj * camera.view * (gl_in[0].gl_Position + vec4(p, 1));
+
+    //SKYBOX 
+    if (in_up[0].w < 0) {
+        bladeColor = vec3(0.4, .82, .95);
+    }
+    else {
+        bladeColor = vec3(-1, 1, 0);
+    }
 }

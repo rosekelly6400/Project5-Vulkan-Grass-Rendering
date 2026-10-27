@@ -30,6 +30,10 @@ void Camera::UpdateOrbit(float deltaX, float deltaY, float deltaZ) {
     theta += deltaX;
     phi += deltaY;
     r = glm::clamp(r - deltaZ, 1.0f, 50.0f);
+    float maxR = 34.0;
+    if (r > maxR) {
+        r = maxR;
+    }
 
     float radTheta = glm::radians(theta);
     float radPhi = glm::radians(phi);

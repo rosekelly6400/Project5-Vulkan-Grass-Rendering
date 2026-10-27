@@ -9,6 +9,7 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
 
 // TODO: Declare fragment shader inputs
 layout(location = 0) in vec3 normal;
+layout(location = 1) in vec3 bladeColor;
 
 layout(location = 0) out vec4 outColor;
 
@@ -29,4 +30,10 @@ void main() {
 
     // Camera position debugging view
     //outColor = vec4(normalize(camera.camPos.xyz), 1);
+
+
+    //SKYBOX
+    if (bladeColor.r > -0.5) {
+        outColor = vec4(bladeColor, 1);
+    }
 }
