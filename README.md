@@ -18,7 +18,7 @@ This project uses Vulkan to implement the techniques described in the paper, [Re
 
 #### Grass Rendering
 
-I rendered the grass by running a separate graphics pipeline that takes 3 Bezier control points for each blade of grass, and uses those control points in a tessellation shader to generate additional vertices to form the curved shape of each grass blade. 
+I rendered the grass by running a separate graphics pipeline that takes in 3 Bezier control points for each blade of grass, and uses those control points in a tessellation shader to generate additional vertices to form the curved shape of each grass blade. 
 
 <img src="img/readme/noForces.png" width="600" >
 
@@ -30,11 +30,11 @@ Forces are calculated in a compute shader that runs before the graphics pipeline
 
 - Gravity: calculated using a constant representing the force of gravity on the blade of grass as well as the blade's front vector to cause the blade of grass to droop in its front direction.
 
-- Recovery: calculated using a stiffness constant set for each blade of grass to counteract forces bending the grass from its default state (straight up).
+- Recovery: calculated using Hooke's law and a stiffness constant set for each blade of grass to counteract forces bending the grass from its default state (straight up).
 
 <img src="img/readme/gravityAndRecovery.png" width="600" >
 
-In the above image the grass has gravity and recovery simulated on each blade. You can see the slight bend in each blade in its equilibrium state balancing gravity and recovery.
+In the above image the grass has gravity and recovery exerted on each blade. You can see the slight bend in each blade in its equilibrium state balancing gravity and recovery.
 
 - Wind: I created my own wind equation based on time and grass location (final wind equation result shown in the gif at the top of the README). I use my wind equation with the formula I implemented from the original paper to calculate the total force of the wind on a blade. The paper's formula also takes into account how tall the grass is and how aligned it is with the wind, as a tall blade of grass that is completely aligned with the direction of the wind will be more affected by it than a short blade of grass that is not aligned with the wind direction.
 
@@ -99,7 +99,7 @@ Generally as the number of blades increases, FPS appears to decay exponentially.
 
 The above graph compares the performance of the different culling methods I described in the previous section. As you can see, the grass renderer clearly performs better with all of these methods applied (green line) than without them (orange line). For ~65.5k blades of grass, the renderer using all culling methods performed 26.5% better than using no culling.
 
-Interestingly, the method that seems to contribute the most to the culling performance improvement is orientation culling. It is worth noting I tested all of these methods from the same camera angle on the same size patch of grass. Given how dense the grass is at these high numbers of grass blades, it is likely that many blades have an orientation within range to be culled from the testing angle. The distance culling appeared to have the next biggest performance improvement. This makes sense at is thinning certain buckets of the area. I would expect this culling method to have had a larger impact than orientation culling, but the size of the patch of grass is relatively small so the true potential of distance culling did not have an opportunity to shine in this limited test. Frustum calling had the smallest relative peformance improvement over the non-culling test data. This could be due to the camera angle I chose for this test as it encompasses most of the grass in the scene. Each of these methods could have a larger contribution in specific situations; long views of grass with a great variety in distance would benefit greatly from distance culling, being in the middle of large grass field with grass all around the camera would benefit from frustum viewing, and highly dense grass could benefit more from orientation culling.
+Interestingly, the method that seems to contribute the most to the culling performance improvement is orientation culling. It is worth noting I tested all of these methods from the same camera angle on the same size patch of grass. Given how dense the grass is at these high numbers of grass blades, it is likely that many blades have an orientation within range to be culled from the testing angle. The distance culling appeared to have the next biggest performance improvement. This makes sense as it is thinning specified buckets of the grass patch and is guaranteed to be culling a portion of grass blades. I would expect this culling method to have had a larger impact than orientation culling, but the size of the patch of grass is relatively small so the true potential of distance culling did not have an opportunity to shine in this limited test. Frustum calling had the smallest relative performance improvement over the non-culling test data. This could be due to the camera angle I chose for this test as it encompasses most of the grass in the scene. Each of these methods could have a larger contribution in specific situations; long views of grass with a great variety in distance would benefit greatly from distance culling, being in the middle of large grass field with grass all around the camera would benefit from frustum viewing, and highly dense grass could benefit more from orientation culling.
 
 ### LOD Performance Improvement
 
@@ -121,4 +121,4 @@ As shown in the graph and table above, adding LOD further improved performance. 
 |262144|	64.8	|
 |524288|	65.1	|
 
-While it might appear on the graph that the performance increase from culling and LOD drastically decreases as the number of blades of grass increases, this is actually not the case. As shown in the table above, the percent FPS increase from the approach using both culling and LOD compared to the approach using neither, remains relatively steady as the number of grass blades increases.
+While it might appear on the graph that the performance increase from culling and LOD drastically decreases as the number of blades of grass increases, this is actually not the case. As shown in the table above, the percent FPS increase from the approach using both culling and LOD compared to the approach using neither, remains relatively similar as the number of grass blades increases.
