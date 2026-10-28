@@ -32,13 +32,17 @@ void main() {
     out_up[gl_InvocationID] = up[gl_InvocationID];
 	// TODO: Set level of tesselation
     // LOD SETTING
-    float max_tess = 8.0;
+    float width = v2[gl_InvocationID].w;
+    float max_tess = 17.0;
     float max_distance = 50.0;
 
     float curr_distance = length(v0[gl_InvocationID].xyz - camera.camPos.xyz);
-    float tess_level = 3.0;
+    float tess_level = 17;
     if(curr_distance < max_distance) {
         tess_level = max_tess - (curr_distance/max_distance) * (max_tess-3);
+    }
+    if(width <= .01) {
+        tess_level = 0;
     }
 
     gl_TessLevelInner[0] = tess_level;

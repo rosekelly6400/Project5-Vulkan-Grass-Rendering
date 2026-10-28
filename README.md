@@ -62,3 +62,15 @@ The above gif shows how the distance culling "thins" the density of grass in the
 In the above gif, the frustum bounds were made tighter than the actual view frustum to illustrate the culling occurring.
 
 ## Performance Analysis
+
+### Culling Method Comparison
+
+<img src="img/readme/CullingComp.png" width="700" >
+
+| Number of Bounces	| Unterminated Rays (Open Box) | Unterminated Rays (Closed Box) |
+| ------------- | ------------- | ------------- |
+|0	|640000	|640000|
+
+### LOD Performance Improvement
+
+<img src="img/readme/OptimizationComp.png" width="700" >

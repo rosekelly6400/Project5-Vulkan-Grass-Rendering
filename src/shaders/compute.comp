@@ -123,7 +123,7 @@ void main() {
     // DISTANCE CULLING
     float grassId = input_v0.x*100.0 + input_v0.z*10.0; // create id based on location to enable below distance bucketing method
     int n = 4; // number of buckets
-    float max_distance = 45.0;
+    float max_distance = 38.0;
     float d_proj = length(input_v0 - camera.camPos.xyz - input_up * dot(input_v0 - camera.camPos.xyz, input_up));
     float distanceTestVal = float(n) * (1.0 - (d_proj/max_distance));
     if (int(grassId) % n > distanceTestVal) {
