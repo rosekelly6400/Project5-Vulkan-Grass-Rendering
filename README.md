@@ -67,10 +67,20 @@ In the above gif, the frustum bounds were made tighter than the actual view frus
 
 <img src="img/readme/CullingComp.png" width="700" >
 
-| Number of Bounces	| Unterminated Rays (Open Box) | Unterminated Rays (Closed Box) |
-| ------------- | ------------- | ------------- |
-|0	|640000	|640000|
+| Number of Blades |	Orientation Culling |	Distance Culling |	Frustum Calling	| All Culling Methods |	No Culling |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+|65536	|188.6|	166.6|	155.6|	207.4 |	149 |
+|131072	|88.2|	85.1|	77.2	|102.5|	74.3 |
+|262144	|44.3|	41.7|	38.4|	51.3|	37.2 |
+|524288	|22.1|	20.8|	19.2|	25.9|	18.6|
 
 ### LOD Performance Improvement
 
 <img src="img/readme/OptimizationComp.png" width="700" >
+
+| Number of Blades |	Culling and LOD |	Culling Only |	No Optimizations|
+| ------------- | ------------- | ------------- | ------------- |
+|65536	|250.8	|207.4	|149|
+|131072|	122.5|	102.5|	74.3|
+|262144|	61.3	|51.3	|37.2|
+|524288|	30.7	|25.9	|18.6|
