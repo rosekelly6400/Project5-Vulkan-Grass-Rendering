@@ -16,15 +16,9 @@ layout(location = 0) out vec4 outColor;
 void main() {
     // TODO: Compute fragment color
 
-    float camToCenterDist = length(camera.camPos.xyz)/ 20.0;
-
-    // go back and fix this
     float lambertian = dot(normal.xyz, vec3(0.0, -1.0, 0.0));
     vec3 grassColor = vec3(0.2, 0.55, 0.28) + clamp(lambertian, 0.0, 1.0)*vec3(0.1, 0.3, 0.2);
     outColor = vec4(grassColor, 1);
-
-    // Camera position debugging view
-    //outColor = vec4(normalize(camera.camPos.xyz), 1);
 
 
     //SKYBOX
