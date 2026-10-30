@@ -16,6 +16,7 @@ layout (location = 3) in vec4 in_up[];
 
 layout(location = 0) out vec3 normal;
 layout(location = 1) out vec3 bladeColor;
+layout(location = 2) out float fragHeight;
 
 void main() {
     float u = gl_TessCoord.x;
@@ -63,11 +64,14 @@ void main() {
 
     vec4 worldpos = (gl_in[0].gl_Position + vec4(p, 1));
     gl_Position = camera.proj * camera.view * (gl_in[0].gl_Position + vec4(p, 1));
-
+    fragHeight = (gl_in[0].gl_Position + vec4(p, 1)).y;
     //SKYBOX 
     if (in_up[0].w < 0) {
         //bladeColor = vec3(0.4, .79, .79) * (1.5 - clamp(worldpos.y/50.0, 0, 0.7));
         bladeColor = vec3(0.4, .79, .82);
+        if (in_up[0].w < -1) {
+            bladeColor = vec3(0.79, .4, .82);
+        }
     }
     else {
         bladeColor = vec3(-1, 1, 0);

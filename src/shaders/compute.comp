@@ -8,6 +8,7 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
     mat4 view;
     mat4 proj;
     vec4 camPos;
+    vec4 cubePos;
 } camera;
 
 layout(set = 1, binding = 0) uniform Time {
@@ -52,6 +53,9 @@ bool inBounds(float value, float bounds) {
 }
 
 void main() {
+    vec3 CubeMin = camera.cubePos.xyz + vec3(-1.0, 0.0, -1.0);
+    vec3 CubeMax = camera.cubePos.xyz + vec3(1.0, 0.0, 1.0);
+
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
 		//numBlades.vertexCount = 0;
@@ -100,6 +104,7 @@ void main() {
     // CALCULATE V2 FROM FORCES
     vec3 output_v2 = input_v2 + (total_gravity + recovery + total_wind) * deltaTime;
     output_v2 = output_v2 - input_up * min(dot(input_up, (output_v2 - input_v0)), 0.0); // account for v2 being underground
+
     // CALCULATE V1 FROM NEW V2
     float l_proj = length(output_v2 - input_v0 - input_up * dot((output_v2 - input_v0), input_up));
     vec3 output_v1 = input_v0 + input_height * input_up * max(1.0 - l_proj/input_height, 0.5*max(l_proj/input_height, 1.0));
@@ -110,6 +115,12 @@ void main() {
     float r = input_height / L;
     vec3 v1_corr = input_v0 + r * (output_v1 - input_v0);
     vec3 v2_corr = v1_corr + r * (output_v2 - output_v1);
+
+    // PREVENT CUBE INTERSECTION
+    if (input_v0.x < CubeMin.x && input_v0.z >=  CubeMin.z && input_v0.z <  CubeMax.z ) {
+        v2_corr.x = min(CubeMin.x+0.3, v2_corr.x);
+        v1_corr.x = min(CubeMin.x+0.3, v1_corr.x);
+    }
     
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
@@ -141,9 +152,20 @@ void main() {
         culled = true;
     }
 
+    // CUBE CHANGES
+    if(input_v0.x >=  CubeMin.x && input_v0.x <  CubeMax.x
+        && input_v0.z >=  CubeMin.z && input_v0.z <  CubeMax.z) {
+        //culled = true;
+        input_up = vec3(0.95,0.05,0);
+        input_up = normalize(normalize(input_v0.xyz - camera.cubePos.xyz) + vec3(0.0,0.2,0));
+    }
+    else {
+        input_up = vec3(0.0,1.0,0);
+    }
+
     // SKYBOX
     
-    if (index >= 2 && index <= 7 ) {
+    if (index >= 2 && index <= 13 ) {
         input_stiffness = -1.0;
         input_height = 200.0;
         input_width = 200.0;
@@ -155,34 +177,73 @@ void main() {
             v2_corr = vec3(1,0,0); // right
             v1_corr = input_v0 + vec3(0, input_height, 0);
         }
-        if (index == 3) {   //behind
+        else if (index == 3) {   //behind
             input_v0 = vec3(0,-36,boxRadius);
             v2_corr = vec3(1,0,0); // right
             v1_corr = input_v0 + vec3(0, input_height, 0);
         }
-        if (index == 4) {   //right
+        else if (index == 4) {   //right
             input_v0 = vec3(boxRadius,-36,0);
             v2_corr = vec3(0,0,1); // right
             v1_corr = input_v0 + vec3(0, input_height, 0);
         }
-        if (index == 5) {   //left
+        else if (index == 5) {   //left
             input_v0 = vec3(-boxRadius,-36,0);
             v2_corr = vec3(0,0,1); // right
             v1_corr = input_v0 + vec3(0, input_height, 0);
         }
-        if (index == 6) {   //top
+        else if (index == 6) {   //top
             input_height = 200.0;
             input_width = 200.0;
             input_v0 = vec3(-40,boxRadius,0);
             v2_corr = vec3(0,0,1); // right
             v1_corr = input_v0 + vec3(input_height, 0, 0);
         }
-        if (index == 7) {   //bottom
+        else if (index == 7) {   //bottom
             input_height = 300.0;
             input_width = 300.0;
             input_v0 = vec3(-70,-boxRadius,0);
             v2_corr = vec3(0,0,1); // right
             v1_corr = input_v0 + vec3(input_height, 0, 0);
+        }
+        // MOVABLE CUBE
+        else {
+            float cubeRadius = 0.86;
+            input_stiffness = -1.0;
+            input_height = 4.0 * cubeRadius;
+            input_width = 2.0 * cubeRadius;
+            input_stiffness = -3.0;
+
+            if (index == 8) {  //front
+                input_v0 = vec3(0,0,-cubeRadius) +camera.cubePos.xyz;
+                v2_corr = vec3(1,0,0); // right
+                v1_corr = input_v0 + vec3(0, input_height, 0);
+            }
+            else if (index == 9) {   //behind
+                input_v0 = vec3(0,0,cubeRadius) +camera.cubePos.xyz;
+                v2_corr = vec3(1,0,0); // right
+                v1_corr = input_v0 + vec3(0, input_height, 0);
+            }
+            else if (index == 10) {   //right
+                input_v0 = vec3(cubeRadius,0,0) +camera.cubePos.xyz;
+                v2_corr = vec3(0,0,1); // right
+                v1_corr = input_v0 + vec3(0, input_height, 0);
+            }
+            else if (index == 11) {   //left
+                input_v0 = vec3(-cubeRadius,0,0) +camera.cubePos.xyz;
+                v2_corr = vec3(0,0,1); // right
+                v1_corr = input_v0 + vec3(0, input_height, 0);
+            }
+            else if (index == 12) {   //top
+                input_v0 = vec3(-cubeRadius,input_width,0) +camera.cubePos.xyz;
+                v2_corr = vec3(0,0,1); // right
+                v1_corr = input_v0 + vec3(2.0*input_width, 0, 0);
+            }
+            else if (index == 13) {   //bottom
+                input_v0 = vec3(-cubeRadius,0,0) +camera.cubePos.xyz;
+                v2_corr = vec3(0,0,-1); // right
+                v1_corr = input_v0 + vec3(2.0*input_width, 0, 0);
+            }
         }
 
         culledBlades.blades[index].v0 = vec4(input_v0, input_orientation);
