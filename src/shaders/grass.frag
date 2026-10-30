@@ -27,7 +27,7 @@ void main() {
     //SKYBOX
     if (bladeColor.r > -0.5) {
         outColor = vec4(bladeColor, 1);
-        if (bladeColor.r > 0.5) {
+        if (bladeColor.r > 0.7) {
             if(lambertian > 0.5) {
                 heightLightAdjustment = 1.1;
             }

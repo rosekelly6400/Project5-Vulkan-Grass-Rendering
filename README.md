@@ -8,7 +8,14 @@ Vulkan Grass Rendering
 * Tested on: Windows 11, i7-13700F @ 2.10 GHz 16GB, RTX 4060-Ti 8GB (PC)
 
 
-<img src="img/readme/grassCover.gif" width="600" >
+<img src="img/readme/finalgrass.gif" width="600" >
+<img src="img/readme/movingCube.gif" width="600" >
+
+### Controls
+
+Rotate the Camera: Hold the left mouse button down and move the mouse on screen
+Zoom the Camera: Hold the right mouse button down and move the mouse up or down to change zoom level
+Move the Cube: hold down the W, A, S, and D, keys to move in thes forward, back, left and right directions from the starting camera pov
 
 ## Summary
 
@@ -68,6 +75,12 @@ In the above gif, the frustum bounds were made tighter than the actual view frus
 
 I also added a level of detail optimization that tesselates grass closer to the camera at a higher level than grass further from the camera. This has a negligible effect on render quality since grass farther from the camera is smaller on the screen anyway and it is harder to tell how many vertices it has. In fact, this method can enable increasing the percieved quality of the image without decreasing performance since you can get the same performance with higher tessellation for closer grass blades and lower tessellation for farther away blades.
 
+#### Interactive Movable Cube with Grass Interaction 
+
+Additionally, I added a cube you can control using the WASD keys that pushes down the grass its on top of and prevents intersection with grass blowing into it. The existing forces simulation that I described above, especially the recovery force, works with this added feature to create natural looking grass movement as the cube moves through the grass.
+
+<img src="img/readme/movingCubeSide.gif" width="600" >
+
 #### Sky Box
 
 I also added a sky box to the scene with a sky blue color to give the sense that--from certain camera angles--this could be a grassy field somewhere rather than a patch of grass existing in a black void.
@@ -122,3 +135,12 @@ As shown in the graph and table above, adding LOD further improved performance. 
 |524288|	65.1	|
 
 While it might appear on the graph that the performance increase from culling and LOD drastically decreases as the number of blades of grass increases, this is actually not the case. As shown in the table above, the percent FPS increase from the approach using both culling and LOD compared to the approach using neither, remains relatively similar as the number of grass blades increases.
+
+### Resources Used
+* [GLFW Input Guide](https://www.glfw.org/docs/3.3/input_guide.html)
+* [Responsive Real-Time Grass Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf)
+* [CIS565 Vulkan samples](https://github.com/CIS565-Fall-2017/Vulkan-Samples/tree/master/samples/5_helloTessellation)
+* [Official Vulkan documentation](https://www.khronos.org/registry/vulkan/)
+* [Vulkan tutorial](https://vulkan-tutorial.com/)
+* [RenderDoc blog on Vulkan](https://renderdoc.org/vulkan-in-30-minutes.html)
+* [Tessellation tutorial](https://ogldev.org/www/tutorial30/tutorial30.html)

@@ -68,7 +68,7 @@ void main() {
     //SKYBOX 
     if (in_up[0].w < 0) {
         //bladeColor = vec3(0.4, .79, .79) * (1.5 - clamp(worldpos.y/50.0, 0, 0.7));
-        bladeColor = vec3(0.4, .79, .82);
+        bladeColor = vec3(0.44, .85, .92);
         if (in_up[0].w < -1) {
             bladeColor = vec3(0.79, .4, .82);
         }

@@ -97,13 +97,17 @@ void main() {
     // RECOVERY
     vec3 recovery = (initialV2 - input_v2) * input_stiffness;
     // WIND
-    vec3 wind = vec3(1.0, 0, 0.0)  * (cos(input_v0.x-4.0*totalTime) + 1 ) * (cos(input_v0.z*0.25-totalTime) + 1 ) * 10.0;
+    vec3 wind = vec3(1.0, 0, 0.0)  * (cos(input_v0.x*.7-4.0*totalTime) + 1 ) * (cos(input_v0.z*0.25-totalTime) + 1 ) * 10.0;
     float directionAlignment = 1.0 - abs(dot(normalize(wind), normalize(input_v2 - input_v0)));
     float heightRatio = dot((input_v2 - input_v0), input_up) / input_height;
     vec3 total_wind = wind * directionAlignment * heightRatio;
     // CALCULATE V2 FROM FORCES
     vec3 output_v2 = input_v2 + (total_gravity + recovery + total_wind) * deltaTime;
     output_v2 = output_v2 - input_up * min(dot(input_up, (output_v2 - input_v0)), 0.0); // account for v2 being underground
+    // PREVENT CUBE INTERSECTION
+    if (input_v0.x < CubeMin.x && input_v0.z >=  CubeMin.z && input_v0.z <  CubeMax.z ) {
+        output_v2.x = min(CubeMin.x+0.3, output_v2.x);
+    }
 
     // CALCULATE V1 FROM NEW V2
     float l_proj = length(output_v2 - input_v0 - input_up * dot((output_v2 - input_v0), input_up));
@@ -115,12 +119,6 @@ void main() {
     float r = input_height / L;
     vec3 v1_corr = input_v0 + r * (output_v1 - input_v0);
     vec3 v2_corr = v1_corr + r * (output_v2 - output_v1);
-
-    // PREVENT CUBE INTERSECTION
-    if (input_v0.x < CubeMin.x && input_v0.z >=  CubeMin.z && input_v0.z <  CubeMax.z ) {
-        v2_corr.x = min(CubeMin.x+0.3, v2_corr.x);
-        v1_corr.x = min(CubeMin.x+0.3, v1_corr.x);
-    }
     
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
