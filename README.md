@@ -8,8 +8,7 @@ Vulkan Grass Rendering
 * Tested on: Windows 11, i7-13700F @ 2.10 GHz 16GB, RTX 4060-Ti 8GB (PC)
 
 
-<img src="img/readme/finalgrass.gif" width="600" >
-<img src="img/readme/movingCube.gif" width="600" >
+<img src="img/readme/finalgrass.gif" width="400" > <img src="img/readme/movingCube.gif" width="400" >
 
 ### Controls
 
